@@ -25,9 +25,13 @@ public:
 
     void push_back(bool bit);
 
+    void pop_back(uint32_t number_of_bits = 1);
+
 private:
 
     static uint64_t min(uint64_t a, uint64_t b);
+
+    static uint64_t max(uint64_t a, uint64_t b);
 
     void reallocate(uint32_t new_capacity_in_bytes);
 
@@ -67,6 +71,10 @@ void bit_string::set_bit_value(uint32_t position, bool bit) const {
 }
 
 
+void bit_string::pop_back(uint32_t number_of_bits) {
+    m_size_in_bits = max(m_size_in_bits - number_of_bits, 0);
+}
+
 void bit_string::reallocate(uint32_t new_capacity_in_bytes) {
     auto* new_data = new uint8_t[new_capacity_in_bytes];
     if (m_data != nullptr) {
@@ -81,6 +89,10 @@ void bit_string::reallocate(uint32_t new_capacity_in_bytes) {
 
 uint64_t bit_string::min(uint64_t a, uint64_t b) {
     return (a < b) ? a : b;
+}
+
+uint64_t bit_string::max(uint64_t a, uint64_t b) {
+    return (a < b) ? b : a;
 }
 
 #endif //BIT_STRING_H
