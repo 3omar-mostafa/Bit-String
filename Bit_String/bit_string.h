@@ -19,6 +19,14 @@ private:
 
 public:
 
+    bit_string& operator =(const bit_string& other);  // Copy Assignment Operator
+
+    bit_string& operator =(bit_string&& other) noexcept;  // Move Assignment Operator
+
+    bit_string(const bit_string& other);  // Copy Constructor
+
+    bit_string(bit_string&& other) noexcept;  // Move Constructor
+
     ~bit_string();  // Destructor
 
     bit_string() = default;
@@ -37,11 +45,57 @@ private:
 
     void set_bit_value(uint32_t position, bool bit) const;
 
+
+    void copy_data(const bit_string& other);
+
+    void move_data(bit_string& other);
+
 };
 
 
+
+bit_string& bit_string::operator =(const bit_string& other) {
+    if (&other == this) // Check for self assignment
+        return *this;
+
+    delete[] m_data;
+    copy_data(other);
+    return *this;
+}
+
+bit_string& bit_string::operator =(bit_string&& other) noexcept {
+    delete[] m_data;
+    move_data(other);
+    return *this;
+}
+
+bit_string::bit_string(const bit_string& other) {
+    copy_data(other);
+}
+
+bit_string::bit_string(bit_string&& other) noexcept {
+    move_data(other);
+}
+
 bit_string::~bit_string() {
     delete[] m_data;
+}
+
+void bit_string::move_data(bit_string& other) {
+    // Take resources from other
+    m_size_in_bits = other.m_size_in_bits;
+    m_capacity_in_bytes = other.m_capacity_in_bytes;
+    m_data = other.m_data;
+
+    // Clear other's resources
+    other.m_data = nullptr;
+}
+
+void bit_string::copy_data(const bit_string& other) {
+    m_size_in_bits = other.m_size_in_bits;
+    m_capacity_in_bytes = size_in_bytes();
+    m_data = new uint8_t[m_capacity_in_bytes];
+    memcpy(m_data, other.m_data, m_capacity_in_bytes);
 }
 
 
