@@ -35,6 +35,19 @@ public:
 
     void pop_back(uint32_t number_of_bits = 1);
 
+
+    bool empty() const;
+
+    uint32_t capacity() const;
+
+    uint32_t size() const;
+
+    uint32_t length() const;
+
+    uint32_t size_in_bytes() const;
+
+    uint32_t length_in_bytes() const;
+
 private:
 
     static uint64_t min(uint64_t a, uint64_t b);
@@ -42,6 +55,8 @@ private:
     static uint64_t max(uint64_t a, uint64_t b);
 
     void reallocate(uint32_t new_capacity_in_bytes);
+
+    static uint32_t convert_size_to_bytes(uint64_t size_in_bits);
 
     void set_bit_value(uint32_t position, bool bit) const;
 
@@ -140,6 +155,41 @@ void bit_string::reallocate(uint32_t new_capacity_in_bytes) {
     m_capacity_in_bytes = new_capacity_in_bytes;
 }
 
+
+
+bool bit_string::empty() const {
+    return m_size_in_bits == 0;
+}
+
+
+uint32_t bit_string::capacity() const {
+    return m_capacity_in_bytes * BYTE;
+}
+
+
+uint32_t bit_string::size() const {
+    return m_size_in_bits;
+}
+
+
+uint32_t bit_string::length() const {
+    return size();
+}
+
+
+uint32_t bit_string::size_in_bytes() const {
+    return convert_size_to_bytes(m_size_in_bits);
+}
+
+
+uint32_t bit_string::length_in_bytes() const {
+    return size_in_bytes();
+}
+
+
+uint32_t bit_string::convert_size_to_bytes(uint64_t size_in_bits) {
+    return (size_in_bits % BYTE == 0) ? (size_in_bits / BYTE) : (size_in_bits / BYTE + 1);
+}
 
 uint64_t bit_string::min(uint64_t a, uint64_t b) {
     return (a < b) ? a : b;
