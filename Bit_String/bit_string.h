@@ -31,9 +31,15 @@ public:
 
     bit_string() = default;
 
+    explicit bit_string(uint32_t number_of_elements);
+
+    bit_string(uint32_t number_of_elements, bool value);
+
     void push_back(bool bit);
 
     void pop_back(uint32_t number_of_bits = 1);
+
+    void resize(uint64_t n, bool bit = 0);
 
 
     bool empty() const;
@@ -114,6 +120,15 @@ void bit_string::copy_data(const bit_string& other) {
 }
 
 
+
+bit_string::bit_string(uint32_t number_of_elements) {
+    resize(number_of_elements);
+}
+
+bit_string::bit_string(uint32_t number_of_elements, bool value) {
+    resize(number_of_elements, value);
+}
+
 void bit_string::push_back(bool bit) {
 
     if (m_capacity_in_bytes == 0) {
@@ -142,6 +157,17 @@ void bit_string::set_bit_value(uint32_t position, bool bit) const {
 
 void bit_string::pop_back(uint32_t number_of_bits) {
     m_size_in_bits = max(m_size_in_bits - number_of_bits, 0);
+}
+
+
+void bit_string::resize(uint64_t n, bool bit) {
+    reallocate(convert_size_to_bytes(n));
+    if (size_in_bytes() < m_capacity_in_bytes) {  // i.e. the size extended
+        int fill = bit ? -1 : 0; // -1 is all ones (represented as two's complement)
+        uint64_t length = m_capacity_in_bytes - size_in_bytes();
+        memset(m_data + size_in_bytes(), fill, length);
+    }
+    m_size_in_bits = n;
 }
 
 void bit_string::reallocate(uint32_t new_capacity_in_bytes) {
