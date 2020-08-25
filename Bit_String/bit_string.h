@@ -41,6 +41,11 @@ public:
 
     void resize(uint64_t n, bool bit = 0);
 
+    void reserve(uint64_t n);
+
+    void clear();
+
+    void shrink_to_fit();
 
     bool empty() const;
 
@@ -170,6 +175,17 @@ void bit_string::resize(uint64_t n, bool bit) {
     m_size_in_bits = n;
 }
 
+
+void bit_string::reserve(uint64_t n) {
+    if (n < m_size_in_bits) // Make sure we don't shrink below the current size.
+        n = m_size_in_bits;
+
+    if (n > m_capacity_in_bytes * BYTE) {
+        reallocate(convert_size_to_bytes(n));
+    }
+}
+
+
 void bit_string::reallocate(uint32_t new_capacity_in_bytes) {
     auto* new_data = new uint8_t[new_capacity_in_bytes];
     if (m_data != nullptr) {
@@ -181,6 +197,21 @@ void bit_string::reallocate(uint32_t new_capacity_in_bytes) {
     m_capacity_in_bytes = new_capacity_in_bytes;
 }
 
+
+void bit_string::clear() {
+    m_size_in_bits = 0;
+}
+
+
+void bit_string::shrink_to_fit() {
+    if (m_size_in_bits == 0) {
+        delete[] m_data;
+        m_data = nullptr;
+        m_capacity_in_bytes = 0;
+    } else if (m_capacity_in_bytes > size_in_bytes()) {
+        reallocate(size_in_bytes());
+    }
+}
 
 
 bool bit_string::empty() const {
