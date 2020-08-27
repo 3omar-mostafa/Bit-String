@@ -3,6 +3,8 @@
 
 #include <cstring>
 #include <cstdint>
+#include <string>
+#include <stdexcept>
 
 class bit_string {
 
@@ -38,6 +40,14 @@ public:
     void push_back(bool bit);
 
     void pop_back(uint32_t number_of_bits = 1);
+
+    void append(const char* bits, uint32_t start = 0, int32_t length = -1);
+
+    void append(const std::string& bits, uint32_t start = 0, int32_t length = -1);
+
+    void operator +=(const char* bits);
+
+    void operator +=(const std::string& bits);
 
     void resize(uint64_t n, bool bit = 0);
 
@@ -75,6 +85,8 @@ private:
     void copy_data(const bit_string& other);
 
     void move_data(bit_string& other);
+
+    void append_string_unchecked(const char* bits, uint32_t start, int32_t length);
 
 };
 
@@ -162,6 +174,43 @@ void bit_string::set_bit_value(uint32_t position, bool bit) const {
 
 void bit_string::pop_back(uint32_t number_of_bits) {
     m_size_in_bits = max(m_size_in_bits - number_of_bits, 0);
+}
+
+
+void bit_string::append_string_unchecked(const char* bits, uint32_t start, int32_t length) {
+    uint32_t end = start + length;
+
+    for (int i = start; i < end; ++i) {
+        if (bits[i] != '0' && bits[i] != '1') {
+            throw std::logic_error(R"(bit_string accepts only '0' and '1')");
+        }
+        push_back(bits[i] == '1');
+    }
+}
+
+
+void bit_string::append(const char* bits, uint32_t start, int32_t length) {
+    int actual_length = strlen(bits);
+    if (length <= 0 || length > actual_length - start)
+        length = actual_length - start;
+
+    append_string_unchecked(bits, start, length);
+}
+
+void bit_string::append(const std::string& bits, uint32_t start, int32_t length) {
+    if (length <= 0 || length > bits.length() - start)
+        length = bits.length() - start;
+
+    append_string_unchecked(bits.c_str(), start, length);
+}
+
+void bit_string::operator +=(const char* bits) {
+    append(bits);
+}
+
+
+void bit_string::operator +=(const std::string& bits) {
+    append(bits);
 }
 
 
