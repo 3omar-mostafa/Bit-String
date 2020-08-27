@@ -49,6 +49,10 @@ public:
 
     void operator +=(const std::string& bits);
 
+    bool at(uint32_t position) const;
+
+    bool operator [](uint32_t position) const;
+
     void resize(uint64_t n, bool bit = 0);
 
     void reserve(uint64_t n);
@@ -213,6 +217,17 @@ void bit_string::operator +=(const std::string& bits) {
     append(bits);
 }
 
+
+
+bool bit_string::at(uint32_t position) const {
+    uint32_t array_index = position / BYTE;
+    uint8_t bit_index = BYTE - position % BYTE - 1;
+    return (m_data[array_index] >> bit_index) & 1u;
+}
+
+bool bit_string::operator [](uint32_t position) const {
+    return at(position);
+}
 
 void bit_string::resize(uint64_t n, bool bit) {
     reallocate(convert_size_to_bytes(n));
