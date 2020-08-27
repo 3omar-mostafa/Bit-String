@@ -37,6 +37,10 @@ public:
 
     bit_string(uint32_t number_of_elements, bool value);
 
+    static bit_string from_string(const std::string& str, uint64_t start = 0, int64_t length = -1);
+
+    static bit_string from_string(const char* str, uint64_t start = 0, int64_t length = -1);
+
     void push_back(bool bit);
 
     void pop_back(uint32_t number_of_bits = 1);
@@ -152,6 +156,33 @@ bit_string::bit_string(uint32_t number_of_elements) {
 
 bit_string::bit_string(uint32_t number_of_elements, bool value) {
     resize(number_of_elements, value);
+}
+
+
+bit_string bit_string::from_string(const std::string& str, uint64_t start, int64_t length) {
+    if (length <= 0 || length > str.length() - start)
+        length = str.length() - start;
+
+    bit_string _bit_string;
+    _bit_string.reserve(length);
+
+    _bit_string.append(str, start, length);
+
+    return _bit_string;
+}
+
+
+bit_string bit_string::from_string(const char* str, uint64_t start, int64_t length) {
+    uint32_t actual_length = strlen(str);
+    if (length <= 0 || length > actual_length - start)
+        length = actual_length - start;
+
+    bit_string _bit_string;
+    _bit_string.reserve(length);
+
+    _bit_string.append(str, start, length);
+
+    return _bit_string;
 }
 
 void bit_string::push_back(bool bit) {
