@@ -41,9 +41,13 @@ public:
 
     void pop_back(uint32_t number_of_bits = 1);
 
+    void append(const bit_string& bits);
+
     void append(const char* bits, uint32_t start = 0, int32_t length = -1);
 
     void append(const std::string& bits, uint32_t start = 0, int32_t length = -1);
+
+    void operator +=(const bit_string& bits);
 
     void operator +=(const char* bits);
 
@@ -180,6 +184,13 @@ void bit_string::pop_back(uint32_t number_of_bits) {
     m_size_in_bits = max(m_size_in_bits - number_of_bits, 0);
 }
 
+void bit_string::append(const bit_string& bits) {
+    // TODO: More Optimization
+    for (int i = 0; i < bits.length(); ++i) {
+        push_back(bits[i]);
+    }
+}
+
 
 void bit_string::append_string_unchecked(const char* bits, uint32_t start, int32_t length) {
     uint32_t end = start + length;
@@ -206,6 +217,11 @@ void bit_string::append(const std::string& bits, uint32_t start, int32_t length)
         length = bits.length() - start;
 
     append_string_unchecked(bits.c_str(), start, length);
+}
+
+
+void bit_string::operator +=(const bit_string& bits) {
+    append(bits);
 }
 
 void bit_string::operator +=(const char* bits) {
