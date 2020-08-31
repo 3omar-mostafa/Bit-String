@@ -7,6 +7,8 @@
 #include <stdexcept>
 #include <iostream>
 
+#include "bit_reference.h"
+
 class bit_string {
 
 public:
@@ -82,7 +84,11 @@ public:
 
     bool at(uint32_t position) const;
 
+    bit_reference at(uint32_t position);
+
     bool operator [](uint32_t position) const;
+
+    bit_reference operator [](uint32_t position);
 
     void resize(uint64_t n, bool bit = 0);
 
@@ -410,7 +416,15 @@ bool bit_string::at(uint32_t position) const {
     return (m_data[array_index] >> bit_index) & 1u;
 }
 
+bit_reference bit_string::at(uint32_t position) {
+    return {position, m_data};
+}
+
 bool bit_string::operator [](uint32_t position) const {
+    return at(position);
+}
+
+bit_reference bit_string::operator [](uint32_t position) {
     return at(position);
 }
 
