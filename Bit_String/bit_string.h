@@ -51,6 +51,12 @@ public:
 
     void append(const std::string& bits, uint32_t start = 0, int32_t length = -1);
 
+    void append_uint_16(uint16_t value, uint32_t number_of_bits = sizeof(uint16_t) * BYTE);
+
+    void append_uint_32(uint32_t value, uint32_t number_of_bits = sizeof(uint32_t) * BYTE);
+
+    void append_uint_64(uint64_t value, uint32_t number_of_bits = sizeof(uint64_t) * BYTE);
+
     void operator +=(const bit_string& bits);
 
     void operator +=(const char* bits);
@@ -70,6 +76,15 @@ public:
     void clear_complete_bytes();
 
     void shrink_to_fit();
+
+
+    uint64_t to_uint_64();
+
+    uint32_t to_uint_32();
+
+    uint16_t to_uint_16();
+
+    uint8_t to_uint_8();
 
 
     bool operator ==(const bit_string& other) const;
@@ -101,6 +116,8 @@ private:
     static uint64_t min(uint64_t a, uint64_t b);
 
     static uint64_t max(uint64_t a, uint64_t b);
+    
+    uint64_t to_uint(uint32_t number_of_bytes);
 
     void reallocate(uint32_t new_capacity_in_bytes);
 
@@ -113,6 +130,8 @@ private:
     void move_data(bit_string& other);
 
     void append_string_unchecked(const char* bits, uint32_t start, int32_t length);
+
+    void append_uint_unchecked(uint64_t value, uint32_t number_of_bits);
 
 };
 
@@ -265,6 +284,38 @@ void bit_string::append(const std::string& bits, uint32_t start, int32_t length)
 }
 
 
+
+void bit_string::append_uint_unchecked(uint64_t value, uint32_t number_of_bits) {
+    while (number_of_bits) {
+        push_back((value >> --number_of_bits) & 1u);
+    }
+}
+
+void bit_string::append_uint_16(uint16_t value, uint32_t number_of_bits) {
+    if (number_of_bits < 0 || number_of_bits > sizeof(value) * BYTE) {
+        throw std::length_error("number_of_bits Must be between 0 and " + std::to_string(sizeof(value) * BYTE));
+    }
+
+    append_uint_unchecked(value, number_of_bits);
+}
+
+void bit_string::append_uint_32(uint32_t value, uint32_t number_of_bits) {
+    if (number_of_bits < 0 || number_of_bits > sizeof(value) * BYTE) {
+        throw std::length_error("number_of_bits Must be between 0 and " + std::to_string(sizeof(value) * BYTE));
+    }
+
+    append_uint_unchecked(value, number_of_bits);
+}
+
+
+void bit_string::append_uint_64(uint64_t value, uint32_t number_of_bits) {
+    if (number_of_bits < 0 || number_of_bits > sizeof(value) * BYTE) {
+        throw std::length_error("number_of_bits Must be between 0 and " + std::to_string(sizeof(value) * BYTE));
+    }
+
+    append_uint_unchecked(value, number_of_bits);
+}
+
 void bit_string::operator +=(const bit_string& bits) {
     append(bits);
 }
@@ -349,6 +400,44 @@ void bit_string::shrink_to_fit() {
 }
 
 
+
+
+uint64_t bit_string::to_uint_64() {
+    return to_uint(sizeof(uint64_t));
+}
+
+
+uint32_t bit_string::to_uint_32() {
+    return to_uint(sizeof(uint32_t));
+}
+
+
+uint16_t bit_string::to_uint_16() {
+    return to_uint(sizeof(uint16_t));
+}
+
+
+uint8_t bit_string::to_uint_8() {
+    return to_uint(sizeof(uint8_t));
+}
+
+
+uint64_t bit_string::to_uint(uint32_t number_of_bytes) {
+    if (size_in_bytes() > number_of_bytes)
+        throw std::overflow_error("bit_string does not fit in " + std::to_string(number_of_bytes) + " bytes");
+
+    number_of_bytes = size_in_bytes();
+
+    uint64_t value = 0;
+    for (int i = 0; i < number_of_bytes; ++i) {
+        value <<= BYTE;
+        value += m_data[i];
+    }
+
+    value >>= extra_bits_size();
+
+    return value;
+}
 
 bool bit_string::operator ==(const bit_string& other) const {
     return m_size_in_bits == other.m_size_in_bits &&
