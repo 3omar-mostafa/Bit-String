@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <string>
 #include <stdexcept>
+#include <iostream>
 
 class bit_string {
 
@@ -558,5 +559,20 @@ uint64_t bit_string::min(uint64_t a, uint64_t b) {
 uint64_t bit_string::max(uint64_t a, uint64_t b) {
     return (a < b) ? b : a;
 }
+
+
+std::ostream& operator <<(std::ostream& output, const bit_string& bits) {
+    std::string str = bits.to_string();
+    output << str;
+    return output;
+}
+
+std::istream& operator >>(std::istream& input, bit_string& bits) {
+    std::string str;
+    input >> str;
+    bits = bit_string::from_string(str);
+    return input;
+}
+
 
 #endif //BIT_STRING_H
