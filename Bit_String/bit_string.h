@@ -67,9 +67,13 @@ public:
 
     void clear();
 
+    void clear_complete_bytes();
+
     void shrink_to_fit();
 
     bool empty() const;
+
+    bool fit_in_bytes() const;
 
     uint32_t capacity() const;
 
@@ -80,6 +84,12 @@ public:
     uint32_t size_in_bytes() const;
 
     uint32_t length_in_bytes() const;
+
+    uint32_t complete_bytes_size() const;
+
+    uint8_t extra_bits_size() const;
+
+    void fill_extra_bits_with_zeros() const;
 
 private:
 
@@ -92,7 +102,6 @@ private:
     static uint32_t convert_size_to_bytes(uint64_t size_in_bits);
 
     void set_bit_value(uint32_t position, bool bit) const;
-
 
     void copy_data(const bit_string& other);
 
@@ -314,6 +323,16 @@ void bit_string::clear() {
 }
 
 
+void bit_string::clear_complete_bytes() {
+    if (fit_in_bytes()) {
+        m_size_in_bits = 0;
+    } else {
+        m_data[0] = m_data[m_size_in_bits / BYTE];
+        m_size_in_bits = extra_bits_size();
+    }
+}
+
+
 void bit_string::shrink_to_fit() {
     if (m_size_in_bits == 0) {
         delete[] m_data;
@@ -327,6 +346,11 @@ void bit_string::shrink_to_fit() {
 
 bool bit_string::empty() const {
     return m_size_in_bits == 0;
+}
+
+
+bool bit_string::fit_in_bytes() const {
+    return m_size_in_bits % BYTE == 0;
 }
 
 
@@ -352,6 +376,26 @@ uint32_t bit_string::size_in_bytes() const {
 
 uint32_t bit_string::length_in_bytes() const {
     return size_in_bytes();
+}
+
+
+uint32_t bit_string::complete_bytes_size() const {
+    return m_size_in_bits / BYTE;
+}
+
+
+uint8_t bit_string::extra_bits_size() const {
+    return size_in_bytes() * BYTE - m_size_in_bits;
+}
+
+
+void bit_string::fill_extra_bits_with_zeros() const {
+    if (!fit_in_bytes()) {
+        const uint32_t index_of_last_bit = m_size_in_bits + extra_bits_size();
+        for (int i = m_size_in_bits; i < index_of_last_bit; ++i) {
+            set_bit_value(i, 0);
+        }
+    }
 }
 
 
