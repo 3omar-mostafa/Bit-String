@@ -71,6 +71,11 @@ public:
 
     void shrink_to_fit();
 
+
+    bool operator ==(const bit_string& other) const;
+
+    bool operator !=(const bit_string& other) const;
+
     bool empty() const;
 
     bool fit_in_bytes() const;
@@ -341,6 +346,17 @@ void bit_string::shrink_to_fit() {
     } else if (m_capacity_in_bytes > size_in_bytes()) {
         reallocate(size_in_bytes());
     }
+}
+
+
+
+bool bit_string::operator ==(const bit_string& other) const {
+    return m_size_in_bits == other.m_size_in_bits &&
+           memcmp(m_data, other.m_data, size_in_bytes()) == 0;
+}
+
+bool bit_string::operator !=(const bit_string& other) const {
+    return !(other == *this);
 }
 
 
