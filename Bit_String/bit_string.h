@@ -58,6 +58,10 @@ public:
 
     void append(const std::string& bits, uint32_t start = 0, int32_t length = -1);
 
+    void append(char bit);
+
+    void append_byte(uint8_t byte);
+
     void append_uint_16(uint16_t value, uint32_t number_of_bits = sizeof(uint16_t) * BYTE);
 
     void append_uint_32(uint32_t value, uint32_t number_of_bits = sizeof(uint32_t) * BYTE);
@@ -69,6 +73,12 @@ public:
     void operator +=(const char* bits);
 
     void operator +=(const std::string& bits);
+
+    void operator +=(char bit);
+
+    void operator +=(unsigned char byte);
+
+    void operator +=(bool bit);
 
     bool at(uint32_t position) const;
 
@@ -318,11 +328,21 @@ void bit_string::append(const std::string& bits, uint32_t start, int32_t length)
 }
 
 
+void bit_string::append(char bit) {
+    if (bit != '0' && bit != '1') {
+        throw std::logic_error(R"(bit_string accepts only '0' and '1')");
+    }
+    push_back(bit == '1');
+}
 
 void bit_string::append_uint_unchecked(uint64_t value, uint32_t number_of_bits) {
     while (number_of_bits) {
         push_back((value >> --number_of_bits) & 1u);
     }
+}
+
+void bit_string::append_byte(unsigned char byte) {
+    append_uint_unchecked(byte, BYTE);
 }
 
 void bit_string::append_uint_16(uint16_t value, uint32_t number_of_bits) {
@@ -332,6 +352,7 @@ void bit_string::append_uint_16(uint16_t value, uint32_t number_of_bits) {
 
     append_uint_unchecked(value, number_of_bits);
 }
+
 
 void bit_string::append_uint_32(uint32_t value, uint32_t number_of_bits) {
     if (number_of_bits < 0 || number_of_bits > sizeof(value) * BYTE) {
@@ -362,6 +383,24 @@ void bit_string::operator +=(const char* bits) {
 void bit_string::operator +=(const std::string& bits) {
     append(bits);
 }
+
+
+void bit_string::operator +=(const char bit) {
+    append(bit);
+}
+
+
+void bit_string::operator +=(const unsigned char byte) {
+    append_byte(byte);
+}
+
+
+void bit_string::operator +=(const bool bit) {
+    push_back(bit);
+}
+
+
+
 
 
 
