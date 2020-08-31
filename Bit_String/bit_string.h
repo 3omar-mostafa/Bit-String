@@ -84,6 +84,8 @@ public:
     void shrink_to_fit();
 
 
+    std::string to_string() const;
+
     uint64_t to_uint_64();
 
     uint32_t to_uint_32();
@@ -431,6 +433,16 @@ void bit_string::shrink_to_fit() {
 }
 
 
+std::string bit_string::to_string() const {
+    std::string str;
+    str.reserve(m_size_in_bits);
+
+    for (int i = 0; i < m_size_in_bits; ++i) {
+        str.push_back(at(i) ? '1' : '0');
+    }
+
+    return str;
+}
 
 
 uint64_t bit_string::to_uint_64() {
