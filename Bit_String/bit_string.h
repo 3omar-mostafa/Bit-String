@@ -37,6 +37,12 @@ public:
 
     bit_string(uint32_t number_of_elements, bool value);
 
+    static bit_string from_uint_16(uint16_t value, uint8_t number_of_bits = sizeof(uint16_t) * BYTE);
+
+    static bit_string from_uint_32(uint32_t value, uint8_t number_of_bits = sizeof(uint32_t) * BYTE);
+
+    static bit_string from_uint_64(uint64_t value, uint8_t number_of_bits = sizeof(uint64_t) * BYTE);
+
     static bit_string from_string(const std::string& str, uint64_t start = 0, int64_t length = -1);
 
     static bit_string from_string(const char* str, uint64_t start = 0, int64_t length = -1);
@@ -189,6 +195,31 @@ bit_string::bit_string(uint32_t number_of_elements) {
 
 bit_string::bit_string(uint32_t number_of_elements, bool value) {
     resize(number_of_elements, value);
+}
+
+bit_string bit_string::from_uint_16(uint16_t value, uint8_t number_of_bits) {
+    bit_string _bit_string;
+    _bit_string.reserve(sizeof(value) * BYTE);
+    _bit_string.append_uint_16(value, number_of_bits);
+
+    return _bit_string;
+}
+
+bit_string bit_string::from_uint_32(uint32_t value, uint8_t number_of_bits) {
+    bit_string _bit_string;
+    _bit_string.reserve(sizeof(value) * BYTE);
+    _bit_string.append_uint_32(value, number_of_bits);
+
+    return _bit_string;
+}
+
+
+bit_string bit_string::from_uint_64(uint64_t value, uint8_t number_of_bits) {
+    bit_string _bit_string;
+    _bit_string.reserve(sizeof(value) * BYTE);
+    _bit_string.append_uint_64(value, number_of_bits);
+
+    return _bit_string;
 }
 
 
