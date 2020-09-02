@@ -96,6 +96,8 @@ public:
 
     bit_reference operator [](uint32_t position);
 
+    const uint8_t* data() const;
+
     void resize(uint64_t n, bool bit = 0);
 
     void reserve(uint64_t n);
@@ -458,6 +460,15 @@ bool bit_string::operator [](uint32_t position) const {
 bit_reference bit_string::operator [](uint32_t position) {
     return at(position);
 }
+
+
+const uint8_t* bit_string::data() const {
+    // Since this function return raw data of the actual bits, the last byte may contain garbage bits
+    // We set these garbage to zeros
+    fill_extra_bits_with_zeros();
+    return m_data;
+}
+
 
 void bit_string::resize(uint64_t n, bool bit) {
     reallocate(convert_size_to_bytes(n));
