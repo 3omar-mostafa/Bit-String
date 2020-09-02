@@ -37,6 +37,30 @@ public:
         return *this = bool(bit_ref);
     }
 
+    bool operator ==(const bit_reference& rhs) const {
+        return bool(*this) == bool(rhs);
+    }
+
+    bool operator !=(const bit_reference& rhs) const {
+        return !(rhs == *this);
+    }
+
+    bool operator <(const bit_reference& rhs) const {
+        return bool(*this) < bool(rhs);
+    }
+
+    bool operator >(const bit_reference& rhs) const {
+        return rhs < *this;
+    }
+
+    bool operator <=(const bit_reference& rhs) const {
+        return !(rhs < *this);
+    }
+
+    bool operator >=(const bit_reference& rhs) const {
+        return !(*this < rhs);
+    }
+
 };
 
 #endif //BIT_REFERENCE_H
