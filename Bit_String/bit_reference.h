@@ -34,6 +34,8 @@ public:
     }
 
     bit_reference& operator =(const bit_reference& bit_ref) {
+        if (&bit_ref == this) // Check for self assignment
+            return *this;
         return *this = bool(bit_ref);
     }
 
