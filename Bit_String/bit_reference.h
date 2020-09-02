@@ -63,4 +63,22 @@ public:
 
 };
 
+inline void swap(bit_reference x, bit_reference y) noexcept {
+    bool temp = x;
+    x = y;
+    y = temp;
+}
+
+inline void swap(bit_reference x, bool& y) noexcept {
+    bool temp = x;
+    x = y;
+    y = temp;
+}
+
+inline void swap(bool& x, bit_reference y) noexcept {
+    bool temp = x;
+    x = y;
+    y = temp;
+}
+
 #endif //BIT_REFERENCE_H
