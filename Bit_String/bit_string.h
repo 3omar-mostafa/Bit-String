@@ -8,10 +8,16 @@
 #include <iostream>
 
 #include "bit_reference.h"
+#include "bit_iterator.h"
+#include "const_bit_iterator.h"
 
 class bit_string {
 
 public:
+    typedef bit_iterator                            iterator;
+    typedef const_bit_iterator                      const_iterator;
+    typedef std::reverse_iterator<iterator>         reverse_iterator;
+    typedef std::reverse_iterator<const_iterator>   const_reverse_iterator;
 
     static const uint32_t BYTE = 8;
 
@@ -110,6 +116,31 @@ public:
     uint16_t to_uint_16();
 
     uint8_t to_uint_8();
+
+
+    bit_iterator begin();
+
+    const_bit_iterator begin() const;
+
+    bit_iterator end();
+
+    const_bit_iterator end() const;
+
+    reverse_iterator rbegin();
+
+    const_reverse_iterator rbegin() const;
+
+    reverse_iterator rend();
+
+    const_reverse_iterator rend() const;
+
+    const_iterator cbegin() const noexcept;
+
+    const_iterator cend() const noexcept;
+
+    const_reverse_iterator crbegin() const noexcept;
+
+    const_reverse_iterator crend() const noexcept;
 
 
     bool operator ==(const bit_string& other) const;
@@ -534,6 +565,66 @@ uint64_t bit_string::to_uint(uint32_t number_of_bytes) {
     value >>= extra_bits_size();
 
     return value;
+}
+
+
+bit_string::iterator bit_string::begin() {
+    return {0, m_data};
+}
+
+
+bit_string::const_iterator bit_string::begin() const {
+    return {0, m_data};
+}
+
+
+bit_string::iterator bit_string::end() {
+    return {m_size_in_bits, m_data};
+}
+
+
+bit_string::const_iterator bit_string::end() const {
+    return {m_size_in_bits, m_data};
+}
+
+
+bit_string::reverse_iterator bit_string::rbegin() {
+    return reverse_iterator(end());
+}
+
+
+bit_string::const_reverse_iterator bit_string::rbegin() const {
+    return const_reverse_iterator(end());
+}
+
+
+bit_string::reverse_iterator bit_string::rend() {
+    return reverse_iterator(begin());
+}
+
+
+bit_string::const_reverse_iterator bit_string::rend() const {
+    return const_reverse_iterator(begin());
+}
+
+
+bit_string::const_iterator bit_string::cbegin() const noexcept {
+    return {0, m_data};
+}
+
+
+bit_string::const_iterator bit_string::cend() const noexcept {
+    return {m_size_in_bits, m_data};
+}
+
+
+bit_string::const_reverse_iterator bit_string::crbegin() const noexcept {
+    return const_reverse_iterator(end());
+}
+
+
+bit_string::const_reverse_iterator bit_string::crend() const noexcept {
+    return const_reverse_iterator(begin());
 }
 
 bool bit_string::operator ==(const bit_string& other) const {
