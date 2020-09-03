@@ -56,6 +56,10 @@ public:
 
     static bit_string from_string(const char* str, uint64_t start = 0, int64_t length = -1);
 
+    static bit_string from_data(const std::string& str, uint64_t start = 0, int64_t length = -1);
+
+    static bit_string from_data(const void* data, uint64_t length);
+
     void push_back(bool bit);
 
     void pop_back(uint32_t number_of_bits = 1);
@@ -65,6 +69,8 @@ public:
     void append(const char* bits, uint32_t start = 0, int32_t length = -1);
 
     void append(const std::string& bits, uint32_t start = 0, int32_t length = -1);
+
+    void append_data(const void* data, uint32_t length);
 
     void append(char bit);
 
@@ -326,6 +332,21 @@ bit_string bit_string::from_string(const char* str, uint64_t start, int64_t leng
     return _bit_string;
 }
 
+
+bit_string bit_string::from_data(const std::string& str, uint64_t start, int64_t length) {
+    if (length <= 0 || length > str.length() - start)
+        length = str.length() - start;
+
+    return from_data(str.c_str() + start, length);
+}
+
+
+bit_string bit_string::from_data(const void* data, uint64_t length) {
+    bit_string _bit_string;
+    _bit_string.append_data(data, length);
+    return _bit_string;
+}
+
 void bit_string::push_back(bool bit) {
 
     if (m_capacity_in_bytes == 0) {
@@ -398,6 +419,22 @@ void bit_string::append(const std::string& bits, uint32_t start, int32_t length)
     append_string_unchecked(bits.c_str(), start, length);
 }
 
+
+void bit_string::append_data(const void* data, uint32_t length) {
+
+    reserve(size() + length * BYTE);
+
+    if (fit_in_bytes()) {
+        memcpy(m_data + size_in_bytes(), data, length);
+        m_size_in_bits += length * BYTE;
+    } else {
+        auto byte_data = reinterpret_cast<const uint8_t*>(data);
+
+        for (int i = 0; i < length; ++i) {
+            append_byte(byte_data[i]);
+        }
+    }
+}
 
 void bit_string::append(char bit) {
     if (bit != '0' && bit != '1') {
