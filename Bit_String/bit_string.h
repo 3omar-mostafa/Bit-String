@@ -766,6 +766,8 @@ bit_string::const_reverse_iterator bit_string::crend() const noexcept {
 }
 
 bool bit_string::operator ==(const bit_string& other) const {
+    fill_extra_bits_with_zeros();
+    other.fill_extra_bits_with_zeros();
     return m_size_in_bits == other.m_size_in_bits &&
            memcmp(m_data, other.m_data, size_in_bytes()) == 0;
 }
