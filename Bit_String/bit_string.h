@@ -857,5 +857,28 @@ std::istream& operator >>(std::istream& input, bit_string& bits) {
     return input;
 }
 
+// TODO: ADD for other compilers
+/**
+ * Hash function to integrate %bit_string with %std::unordered_map and %std::unordered_set
+ */
+namespace std {
+#ifdef __GNUC__  // GNU GCC Compiler
+
+    template<>
+    struct hash<bit_string> {
+        size_t operator ()(const bit_string& to_be_hashed) const {
+            return std::_Hash_impl::hash(to_be_hashed.data(), to_be_hashed.size_in_bytes());
+        }
+    };
+
+#elif defined(_MSC_VER)  // Microsoft Visual Studio Compiler
+    template<>
+    struct hash<bit_string> {
+        size_t operator ()(const bit_string& to_be_hashed) const {
+            return std::_Hash_array_representation(to_be_hashed.data(), to_be_hashed.size_in_bytes());
+        }
+    };
+#endif
+}
 
 #endif //BIT_STRING_H
