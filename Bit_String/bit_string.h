@@ -357,9 +357,16 @@ void bit_string::pop_back(uint32_t number_of_bits) {
 }
 
 void bit_string::append(const bit_string& bits) {
-    // TODO: More Optimization
-    for (int i = 0; i < bits.length(); ++i) {
-        push_back(bits[i]);
+
+    reserve(size() + bits.size());
+
+    if (fit_in_bytes()) {
+        memcpy(m_data + size_in_bytes(), bits.data(), bits.size_in_bytes());
+        m_size_in_bits += bits.size();
+    } else {
+        for (bool bit : bits) {
+            push_back(bit);
+        }
     }
 }
 
@@ -615,8 +622,9 @@ std::string bit_string::to_string() const {
     std::string str;
     str.reserve(m_size_in_bits);
 
-    for (int i = 0; i < m_size_in_bits; ++i) {
-        str.push_back(at(i) ? '1' : '0');
+    const bit_string& this_bit_string = *this; // Creating alias for *this
+    for (bool bit : this_bit_string) {
+        str.push_back(bit ? '1' : '0');
     }
 
     return str;
@@ -799,8 +807,9 @@ uint64_t bit_string::max(uint64_t a, uint64_t b) {
 
 
 std::ostream& operator <<(std::ostream& output, const bit_string& bits) {
-    std::string str = bits.to_string();
-    output << str;
+    for (bool bit : bits) {
+        output << (bit ? '1' : '0');
+    }
     return output;
 }
 
