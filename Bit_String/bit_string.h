@@ -140,7 +140,7 @@ public:
     void shrink_to_fit();
 
 
-    std::string to_string() const;
+    std::string to_string(char one = '1', char zero = '0') const;
 
     uint64_t to_uint_64();
 
@@ -655,13 +655,13 @@ void bit_string::shrink_to_fit() {
 }
 
 
-std::string bit_string::to_string() const {
+std::string bit_string::to_string(char one, char zero) const {
     std::string str;
     str.reserve(m_size_in_bits);
 
     const bit_string& this_bit_string = *this; // Creating alias for *this
     for (bool bit : this_bit_string) {
-        str.push_back(bit ? '1' : '0');
+        str.push_back(bit ? one : zero);
     }
 
     return str;
