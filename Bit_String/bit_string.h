@@ -96,6 +96,31 @@ public:
 
     bit_reference operator [](uint32_t position);
 
+    uint8_t last_byte() const;
+
+    uint8_t back_byte() const;
+
+    uint8_t first_byte() const;
+
+    uint8_t front_byte() const;
+
+    bool last_bit() const;
+
+    bit_reference last_bit();
+
+    bool back() const;
+
+    bit_reference back();
+
+    bool first_bit() const;
+
+    bit_reference first_bit();
+
+    bool front() const;
+
+    bit_reference front();
+
+
     const uint8_t* data() const;
 
     void resize(uint64_t n, bool bit = 0);
@@ -459,6 +484,63 @@ bool bit_string::operator [](uint32_t position) const {
 
 bit_reference bit_string::operator [](uint32_t position) {
     return at(position);
+}
+
+
+uint8_t bit_string::last_byte() const {
+    if (empty())
+        return 0;
+    fill_extra_bits_with_zeros();
+    return m_data[(m_size_in_bits - 1) / BYTE];
+}
+
+uint8_t bit_string::back_byte() const {
+    return last_byte();
+}
+
+uint8_t bit_string::first_byte() const {
+    if (m_size_in_bits <= BYTE)
+        return last_byte();
+    return m_data[0];
+}
+
+uint8_t bit_string::front_byte() const {
+    return first_byte();
+}
+
+bool bit_string::last_bit() const {
+    return at(m_size_in_bits - 1);
+}
+
+
+bit_reference bit_string::last_bit() {
+    return at(m_size_in_bits - 1);
+}
+
+
+bool bit_string::back() const {
+    return last_bit();
+}
+
+
+bit_reference bit_string::back() {
+    return last_bit();
+}
+
+bool bit_string::first_bit() const {
+    return at(0);
+}
+
+bit_reference bit_string::first_bit() {
+    return at(0);
+}
+
+bool bit_string::front() const {
+    return first_bit();
+}
+
+bit_reference bit_string::front() {
+    return first_bit();
 }
 
 
