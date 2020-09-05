@@ -94,6 +94,11 @@ public:
 
     void operator +=(bool bit);
 
+
+    bit_string substr(uint32_t start) const;
+
+    bit_string substr(uint32_t start, uint32_t length) const;
+
     bool at(uint32_t position) const;
 
     bit_reference at(uint32_t position);
@@ -511,6 +516,26 @@ void bit_string::operator +=(const bool bit) {
 
 
 
+bit_string bit_string::substr(uint32_t start) const {
+    return substr(start, length() - start);
+}
+
+bit_string bit_string::substr(uint32_t start, uint32_t length) const {
+    bit_string _bit_string;
+    _bit_string.reserve(length);
+
+    if (start % BYTE == 0) {
+        memcpy(_bit_string.m_data, m_data + convert_size_to_bytes(start), convert_size_to_bytes(length));
+        _bit_string.m_size_in_bits = length;
+    } else {
+        uint32_t end = start + length;
+        for (int i = start; i < end; ++i) {
+            _bit_string.push_back(at(i));
+        }
+    }
+
+    return _bit_string;
+}
 
 bool bit_string::at(uint32_t position) const {
     uint32_t array_index = position / BYTE;
