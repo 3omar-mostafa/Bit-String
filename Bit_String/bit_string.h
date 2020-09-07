@@ -223,6 +223,8 @@ private:
 
     void set_bit_value(uint32_t position, bool bit) const;
 
+    void push_back_unchecked(bool bit);
+
     void copy_data(const bit_string& other);
 
     void move_data(bit_string& other);
@@ -366,8 +368,7 @@ void bit_string::push_back(bool bit) {
         reallocate(m_capacity_in_bytes * 2);
     }
 
-    set_bit_value(m_size_in_bits, bit);
-    m_size_in_bits++;
+    push_back_unchecked(bit);
 }
 
 void bit_string::set_bit_value(uint32_t position, bool bit) const {
@@ -381,6 +382,11 @@ void bit_string::set_bit_value(uint32_t position, bool bit) const {
     }
 }
 
+void bit_string::push_back_unchecked(bool bit) {
+    set_bit_value(m_size_in_bits, bit);
+    m_size_in_bits++;
+}
+
 
 void bit_string::pop_back(uint32_t number_of_bits) {
     m_size_in_bits = max(m_size_in_bits - number_of_bits, 0);
@@ -388,27 +394,37 @@ void bit_string::pop_back(uint32_t number_of_bits) {
 
 void bit_string::append(const bit_string& bits) {
 
-    reserve(size() + bits.size());
+    // If we don't have enough room for all new bits
+    // Used for Optimization to Reallocate Only Once
+    if (bits.size() > capacity() - size()) {
+        reserve(capacity() + max(capacity(), bits.size()));
+    }
 
     if (fit_in_bytes()) {
         memcpy(m_data + size_in_bytes(), bits.data(), bits.size_in_bytes());
         m_size_in_bits += bits.size();
     } else {
         for (bool bit : bits) {
-            push_back(bit);
+            push_back_unchecked(bit);
         }
     }
 }
 
 
 void bit_string::append_string_unchecked(const char* bits, uint32_t start, int32_t length) {
+    // If we don't have enough room for all new bits
+    // Used for Optimization to Reallocate Only Once
+    if (length > capacity() - size()) {
+        reserve(capacity() + max(capacity(), length));
+    }
+
     uint32_t end = start + length;
 
     for (int i = start; i < end; ++i) {
         if (bits[i] != '0' && bits[i] != '1') {
             throw std::logic_error(R"(bit_string accepts only '0' and '1')");
         }
-        push_back(bits[i] == '1');
+        push_back_unchecked(bits[i] == '1');
     }
 }
 
@@ -431,7 +447,11 @@ void bit_string::append(const std::string& bits, uint32_t start, int32_t length)
 
 void bit_string::append_data(const void* data, uint32_t length) {
 
-    reserve(size() + length * BYTE);
+    // If we don't have enough room for all new bits
+    // Used for Optimization to Reallocate Only Once
+    if (length * BYTE > capacity() - size()) {
+        reserve(capacity() + max(capacity(), length * BYTE));
+    }
 
     if (fit_in_bytes()) {
         memcpy(m_data + size_in_bytes(), data, length);
@@ -453,8 +473,14 @@ void bit_string::append(char bit) {
 }
 
 void bit_string::append_uint_unchecked(uint64_t value, uint32_t number_of_bits) {
+    // If we don't have enough room for all new bits
+    // Used for Optimization to Reallocate Only Once
+    if (number_of_bits > capacity() - size()) {
+        reserve(capacity() + max(capacity(), number_of_bits));
+    }
+
     while (number_of_bits) {
-        push_back((value >> --number_of_bits) & 1u);
+        push_back_unchecked((value >> --number_of_bits) & 1u);
     }
 }
 
@@ -534,7 +560,7 @@ bit_string bit_string::substr(uint32_t start, uint32_t length) const {
     } else {
         uint32_t end = start + length;
         for (int i = start; i < end; ++i) {
-            _bit_string.push_back(at(i));
+            _bit_string.push_back_unchecked(at(i));
         }
     }
 
@@ -569,9 +595,6 @@ uint8_t& bit_string::at_byte(uint32_t position){
 
 
 uint8_t bit_string::last_byte() const {
-    if (empty())
-        return 0;
-    fill_extra_bits_with_zeros();
     return m_data[(m_size_in_bits - 1) / BYTE];
 }
 
@@ -580,8 +603,6 @@ uint8_t bit_string::back_byte() const {
 }
 
 uint8_t bit_string::first_byte() const {
-    if (m_size_in_bits <= BYTE)
-        return last_byte();
     return m_data[0];
 }
 
@@ -626,9 +647,6 @@ bit_reference bit_string::front() {
 
 
 const uint8_t* bit_string::data() const {
-    // Since this function return raw data of the actual bits, the last byte may contain garbage bits
-    // We set these garbage to zeros
-    fill_extra_bits_with_zeros();
     return m_data;
 }
 
