@@ -107,6 +107,10 @@ public:
 
     bit_reference operator [](uint32_t position);
 
+    uint8_t at_byte(uint32_t position) const;
+
+    uint8_t& at_byte(uint32_t position);
+
     uint8_t last_byte() const;
 
     uint8_t back_byte() const;
@@ -553,6 +557,14 @@ bool bit_string::operator [](uint32_t position) const {
 
 bit_reference bit_string::operator [](uint32_t position) {
     return at(position);
+}
+
+uint8_t bit_string::at_byte(uint32_t position) const{
+    return m_data[position];
+}
+
+uint8_t& bit_string::at_byte(uint32_t position){
+    return m_data[position];
 }
 
 
