@@ -20,13 +20,17 @@ public:
     typedef std::reverse_iterator<const_iterator>   const_reverse_iterator;
 
     static const uint32_t BYTE = 8;
+    static const uint32_t SMALL_BUFFER_SIZE = 8;
 
 private:
 
     uint32_t m_size_in_bits = 0;
-    uint32_t m_capacity_in_bytes = 0;
+    uint32_t m_capacity_in_bytes = SMALL_BUFFER_SIZE;
 
-    uint8_t* m_data = nullptr;
+    // Used For Small String Optimization (SSO), Use this buffer instead of dynamic heap allocation if size is small.
+    uint8_t small_buffer[SMALL_BUFFER_SIZE];
+
+    uint8_t* m_data = small_buffer;
 
 public:
 
@@ -233,6 +237,9 @@ private:
 
     void append_uint_unchecked(uint64_t value, uint32_t number_of_bits);
 
+    void free_data() const;
+
+    bool is_small_string() const;
 };
 
 
@@ -241,13 +248,13 @@ bit_string& bit_string::operator =(const bit_string& other) {
     if (&other == this) // Check for self assignment
         return *this;
 
-    delete[] m_data;
+    free_data();
     copy_data(other);
     return *this;
 }
 
 bit_string& bit_string::operator =(bit_string&& other) noexcept {
-    delete[] m_data;
+    free_data();
     move_data(other);
     return *this;
 }
@@ -261,10 +268,15 @@ bit_string::bit_string(bit_string&& other) noexcept {
 }
 
 bit_string::~bit_string() {
-    delete[] m_data;
+    free_data();
 }
 
 void bit_string::move_data(bit_string& other) {
+    if (other.is_small_string()) {
+        copy_data(other);
+        return;
+    }
+
     // Take resources from other
     m_size_in_bits = other.m_size_in_bits;
     m_capacity_in_bytes = other.m_capacity_in_bytes;
@@ -276,12 +288,27 @@ void bit_string::move_data(bit_string& other) {
 
 void bit_string::copy_data(const bit_string& other) {
     m_size_in_bits = other.m_size_in_bits;
-    m_capacity_in_bytes = size_in_bytes();
-    m_data = new uint8_t[m_capacity_in_bytes];
+    m_capacity_in_bytes = other.size_in_bytes();
+    if (m_capacity_in_bytes > SMALL_BUFFER_SIZE) {
+        m_data = new uint8_t[m_capacity_in_bytes];
+    }
     memcpy(m_data, other.m_data, m_capacity_in_bytes);
 }
 
 
+void bit_string::free_data() const {
+    if (!is_small_string()) {
+        delete[] m_data;
+    }
+}
+
+bool bit_string::is_small_string() const {
+    return m_data == small_buffer;
+}
+
+/*====================================================================================================================*/
+/*------------------------------------------ Constructors , Factory methods ------------------------------------------*/
+/*====================================================================================================================*/
 
 bit_string::bit_string(uint32_t number_of_elements) {
     resize(number_of_elements);
@@ -359,10 +386,6 @@ bit_string bit_string::from_data(const void* data, uint64_t length) {
 }
 
 void bit_string::push_back(bool bit) {
-
-    if (m_capacity_in_bytes == 0) {
-        reallocate(4);
-    }
 
     if (m_size_in_bits == m_capacity_in_bytes * BYTE) {
         reallocate(m_capacity_in_bytes * 2);
@@ -664,7 +687,7 @@ void bit_string::resize(uint64_t n, bool bit) {
 
 void bit_string::reserve(uint64_t n) {
     if (n < m_size_in_bits) // Make sure we don't shrink below the current size.
-        n = m_size_in_bits;
+        return;
 
     if (n > m_capacity_in_bytes * BYTE) {
         reallocate(convert_size_to_bytes(n));
@@ -673,12 +696,19 @@ void bit_string::reserve(uint64_t n) {
 
 
 void bit_string::reallocate(uint32_t new_capacity_in_bytes) {
-    auto* new_data = new uint8_t[new_capacity_in_bytes];
-    if (m_data != nullptr) {
-        uint32_t capacity = min(new_capacity_in_bytes, m_capacity_in_bytes);
-        memcpy(new_data, m_data, capacity);
-        delete[] m_data;
+    if (is_small_string() && new_capacity_in_bytes <= SMALL_BUFFER_SIZE) {
+        return;
     }
+    uint8_t* new_data;
+    if (new_capacity_in_bytes <= SMALL_BUFFER_SIZE) {
+        new_data = small_buffer;
+        new_capacity_in_bytes = SMALL_BUFFER_SIZE;
+    } else {
+        new_data = new uint8_t[new_capacity_in_bytes];
+    }
+    uint32_t capacity = min(new_capacity_in_bytes, m_capacity_in_bytes);
+    memcpy(new_data, m_data, capacity);
+    free_data();
     m_data = new_data;
     m_capacity_in_bytes = new_capacity_in_bytes;
 }
@@ -700,10 +730,14 @@ void bit_string::clear_complete_bytes() {
 
 
 void bit_string::shrink_to_fit() {
+    if (is_small_string()) {
+        return;
+    }
+
     if (m_size_in_bits == 0) {
-        delete[] m_data;
-        m_data = nullptr;
-        m_capacity_in_bytes = 0;
+        free_data();
+        m_data = small_buffer;
+        m_capacity_in_bytes = SMALL_BUFFER_SIZE;
     } else if (m_capacity_in_bytes > size_in_bytes()) {
         reallocate(size_in_bytes());
     }
