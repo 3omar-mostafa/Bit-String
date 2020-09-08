@@ -28,7 +28,7 @@ private:
     uint32_t m_capacity_in_bytes = SMALL_BUFFER_SIZE;
 
     // Used For Small String Optimization (SSO), Use this buffer instead of dynamic heap allocation if size is small.
-    uint8_t small_buffer[SMALL_BUFFER_SIZE];
+    uint8_t small_buffer[SMALL_BUFFER_SIZE] = {0};
 
     uint8_t* m_data = small_buffer;
 
@@ -288,7 +288,7 @@ void bit_string::move_data(bit_string& other) {
 
 void bit_string::copy_data(const bit_string& other) {
     m_size_in_bits = other.m_size_in_bits;
-    m_capacity_in_bytes = other.size_in_bytes();
+    m_capacity_in_bytes = max(m_capacity_in_bytes, other.size_in_bytes());
     if (m_capacity_in_bytes > SMALL_BUFFER_SIZE) {
         m_data = new uint8_t[m_capacity_in_bytes];
     }
@@ -398,6 +398,11 @@ void bit_string::set_bit_value(uint32_t position, bool bit) const {
     uint32_t array_index = position / BYTE;
     uint8_t bit_index = BYTE - position % BYTE - 1;
 
+    // For each new Byte, initialize it with 0
+    if (position % BYTE == 0) {
+        m_data[array_index] = 0;
+    }
+
     if (bit) {
         m_data[array_index] |= 1u << bit_index;
     } else {
@@ -413,6 +418,7 @@ void bit_string::push_back_unchecked(bool bit) {
 
 void bit_string::pop_back(uint32_t number_of_bits) {
     m_size_in_bits = max(m_size_in_bits - number_of_bits, 0);
+    fill_extra_bits_with_zeros();
 }
 
 void bit_string::append(const bit_string& bits) {
@@ -505,6 +511,7 @@ void bit_string::append_uint_unchecked(uint64_t value, uint32_t number_of_bits) 
     while (number_of_bits) {
         push_back_unchecked((value >> --number_of_bits) & 1u);
     }
+    fill_extra_bits_with_zeros();
 }
 
 void bit_string::append_byte(unsigned char byte) {
@@ -580,6 +587,7 @@ bit_string bit_string::substr(uint32_t start, uint32_t length) const {
     if (start % BYTE == 0) {
         memcpy(_bit_string.m_data, m_data + convert_size_to_bytes(start), convert_size_to_bytes(length));
         _bit_string.m_size_in_bits = length;
+        _bit_string.fill_extra_bits_with_zeros();
     } else {
         uint32_t end = start + length;
         for (int i = start; i < end; ++i) {
@@ -724,7 +732,7 @@ void bit_string::clear_complete_bytes() {
         m_size_in_bits = 0;
     } else {
         m_data[0] = m_data[m_size_in_bits / BYTE];
-        m_size_in_bits = extra_bits_size();
+        m_size_in_bits = BYTE - extra_bits_size();
     }
 }
 
@@ -855,8 +863,6 @@ bit_string::const_reverse_iterator bit_string::crend() const noexcept {
 }
 
 bool bit_string::operator ==(const bit_string& other) const {
-    fill_extra_bits_with_zeros();
-    other.fill_extra_bits_with_zeros();
     return m_size_in_bits == other.m_size_in_bits &&
            memcmp(m_data, other.m_data, size_in_bytes()) == 0;
 }
