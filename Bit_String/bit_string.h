@@ -320,26 +320,20 @@ bit_string::bit_string(uint32_t number_of_elements, bool value) {
 
 bit_string bit_string::from_uint_16(uint16_t value, uint8_t number_of_bits) {
     bit_string _bit_string;
-    _bit_string.reserve(sizeof(value) * BYTE);
     _bit_string.append_uint_16(value, number_of_bits);
-
     return _bit_string;
 }
 
 bit_string bit_string::from_uint_32(uint32_t value, uint8_t number_of_bits) {
     bit_string _bit_string;
-    _bit_string.reserve(sizeof(value) * BYTE);
     _bit_string.append_uint_32(value, number_of_bits);
-
     return _bit_string;
 }
 
 
 bit_string bit_string::from_uint_64(uint64_t value, uint8_t number_of_bits) {
     bit_string _bit_string;
-    _bit_string.reserve(sizeof(value) * BYTE);
     _bit_string.append_uint_64(value, number_of_bits);
-
     return _bit_string;
 }
 
