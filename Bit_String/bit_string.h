@@ -1447,6 +1447,83 @@ uint64_t bit_string::max(uint64_t a, uint64_t b) {
 }
 
 
+/*===================================================================================================================*/
+/*---------------------------------------------- User Defined Literals ----------------------------------------------*/
+/*===================================================================================================================*/
+
+
+/**
+ * User Defined Literal (UDL) to convert chars of %str to %bit_string. <br>
+ * %str is string of bits ("101011").<br>
+ * i.e. if %str is "1010", the result is [1010].<br>
+ *
+ * @note These parameters are passed implicitly by the compiler
+ *
+ * @param str The string to be converted
+ *
+ * @example bit_string bits = "101010"_B ;
+ * @example std::cout << "101010"_B.length() ; -> 6
+ * @example std::cout << "101010"_B.to_string() ; -> 101010
+ */
+bit_string operator "" _B(const char* str, std::size_t length) {
+    return bit_string::from_string(str, 0, length);
+}
+
+
+/**
+ * User Defined Literal (UDL) to convert chars of %str to %bit_string. <br>
+ * %str is string of bits ("101011").<br>
+ * i.e. if %str is "1010", the result is [1010].<br>
+ *
+ * @note These parameters are passed implicitly by the compiler
+ *
+ * @param str The string to be converted
+ *
+ * @example bit_string bits = "101010"_b ;
+ * @example std::cout << "101010"_b.length() ; -> 6
+ * @example std::cout << "101010"_b.to_string() ; -> 101010
+ */
+bit_string operator "" _b(const char* str, std::size_t length) {
+    return bit_string::from_string(str, 0, length);
+}
+
+
+/**
+ * User Defined Literal (UDL) to convert the actual data bits of %str to %bit_string.  <br>
+ * %str is normal string of data, @b not a string of bits ("101011").<br>
+ * i.e. if %str is "abc", the result is [01100001 01100010 01100011].<br>
+ *
+ * @note These parameters are passed implicitly by the compiler
+ *
+ * @param str The string to be converted
+ *
+ * @example bit_string bits = "abc"_D ;
+ * @example std::cout << "abc"_D.length() ; -> 24
+ * @example std::cout << "abc"_D.to_string() ; -> 011000010110001001100011
+ */
+bit_string operator "" _D(const char* str, std::size_t length) {
+    return bit_string::from_data(str, 0, length);
+}
+
+
+/**
+ * User Defined Literal (UDL) to convert the actual data bits of %str to %bit_string.  <br>
+ * %str is normal string of data, @b not a string of bits ("101011").<br>
+ * i.e. if %str is "abc", the result is [01100001 01100010 01100011].<br>
+ *
+ * @note These parameters are passed implicitly by the compiler
+ *
+ * @param str The string to be converted
+ *
+ * @example bit_string bits = "abc"_d ;
+ * @example std::cout << "abc"_d.length() ; -> 24
+ * @example std::cout << "abc"_d.to_string() ; -> 011000010110001001100011
+ */
+bit_string operator "" _d(const char* str, std::size_t length) {
+    return bit_string::from_data(str, 0, length);
+}
+
+
 /*====================================================================================================================*/
 /*------------------------------------------------- Stream Operators -------------------------------------------------*/
 /*====================================================================================================================*/
